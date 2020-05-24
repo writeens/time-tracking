@@ -1,51 +1,127 @@
 /* eslint-disable react-native/no-unused-styles */
 /* eslint-disable react-native/no-color-literals */
-import React, {Component, useState} from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView } from 'react-native';
 
 import EditableTimer from './components/EditableTimer';
 import ToggleableTimerForm from './components/ToggleableTimerForm';
-import {generate as shortKey} from 'shortid';
+import { generate as shortKey } from 'shortid';
+import { newTimer } from './utils/TimerUtils';
 
 const App = () => {
-  const {timers, setTimers} = useState(myTimers)
-  [
+
+  let myTimers = [
     {
-      title:'Pick up my phone',
+      title:'Pick up my phon',
       project:'Outside',
-      elapsed: 5456099,
+      elapsed: "8986300",
       id: shortKey(),
-      isRunning:true
+      isRunning:false
     },
     {
       title:'Walk the dog',
       project:'Outside',
-      elapsed: 1273998,
+      elapsed: "3890985",
       id: shortKey(),
       isRunning: false,
     }
   ]
+  const [timers, setTimers] = useState(myTimers)
+
+  const handleCreateFormSubmit = (timer) => {
+    //Get New Timer
+    const aTimer = newTimer(timer);
+    //Create new timer object with old and new timer
+    const updatedTimers = [...timers, aTimer]
+    //Update State
+    setTimers(updatedTimers)
+  }
+
+  const handleFormSubmit = (attrs) => {
+    //Update exact timer based on id
+    const updatedTimers = timers.map((timer) => {
+      if(timer.id === attrs.id){
+        const {title, project} = attrs;
+        return {
+          ...timer,
+          title,
+          project,
+        }
+      }
+      return timer
+    })
+
+    //Update Timers State
+    setTimers(updatedTimers);
+  }
+
+  const handleRemovePress = (timerId) => {
+    const updatedTimers = timers.filter((timer) => timer.id !== timerId)
+    setTimers(updatedTimers)
+  }
+
+  const incrementTimer = (TIME_INTERVAL) => {
+    const updatedTimers = timers.map((timer) => {
+      const {elapsed, isRunning} = timer;
+      
+      return {
+        ...timer,
+        elapsed: isRunning ? (parseInt(elapsed) + parseInt(TIME_INTERVAL)) : elapsed
+      }
+    })
+
+    setTimers(updatedTimers)
+  }
+
+  const toggleTimer = (timerId) => {
+    const updatedTimer = timers.map(timer => {
+      const {id, isRunning} = timer;
+
+      if( id === timerId) {
+        return {
+          ...timer,
+          isRunning: !isRunning
+        }
+      }
+      return timer
+
+    })
+    setTimers(updatedTimer)
+  }
+
+
+  //On Mount and On Timer Update
+  useEffect(() => {
+    const TIME_INTERVAL = 1000;
+    let INTERVAL_ID = setInterval(() => {
+      incrementTimer(TIME_INTERVAL)
+    }, TIME_INTERVAL);
+
+    //Component Will Unmount Clean Up
+    return () => clearInterval(INTERVAL_ID)
+  }, [timers])
+
   return (
     <View style={styles.appContainer}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Timers</Text>
       </View>
       <ScrollView>
-        <ToggleableTimerForm isOpen={false} />
-        <EditableTimer
-          id="1"
-          title="Dance all day"
-          project="Learning"
-          elapsed="8986300"
-          isRunning
-        />
-        <EditableTimer
-          id="2"
-          title="Sing Please Me"
-          project="Singing"
-          elapsed="3890985"
-          editFormOpen
-        />
+        <ToggleableTimerForm isOpen={false} onFormSubmit={handleCreateFormSubmit}/>
+        {timers.map(({ title, project, id, elapsed, isRunning }) => (
+          <EditableTimer
+          key={id}
+          id={id}
+          title={title}
+          project={project}
+          elapsed={elapsed}
+          isRunning={isRunning}
+          onFormSubmit={handleFormSubmit}
+          onRemovePress={handleRemovePress}
+          onStartPress={toggleTimer}
+          onStopPress={toggleTimer}
+          />
+        ))}
       </ScrollView>
     </View>
   );

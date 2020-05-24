@@ -1,5 +1,7 @@
+/* eslint-disable react-native/no-unused-styles */
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types'
+import { StyleSheet, Text, TouchableOpacity, ColorPropType } from 'react-native';
 
 const TimerButton = (props) => {
     const { color, title, small, onPress } = props;
@@ -52,4 +54,14 @@ const styles = StyleSheet.create({
     },
 })
 
+TimerButton.propTypes = {
+    color: ColorPropType.isRequired,
+    title: PropTypes.string.isRequired,
+    small: PropTypes.bool,
+    onPress: PropTypes.func.isRequired,
+}
+
+TimerButton.defaultProps = {
+    small:false
+}
 export default TimerButton;

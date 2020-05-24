@@ -1,10 +1,32 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
+/* eslint-disable react-native/no-color-literals */
+import React, { useState } from 'react';
+import PropTypes from 'prop-types'
 import { StyleSheet, View, Text, TextInput } from 'react-native';
 
 import TimerButton from './TimerButton';
 
 const TimerForm = (props) => {
-    const { id, title, project } = props
+    const { id, title:myTitle, project:myProject, onFormClose, onFormSubmit } = props
+    
+    const [title, setTitle] = useState(id ? myTitle : '')
+    const [project, setProject] = useState(id ? myProject : '')
+
+    const handleTitleChange = (title) => {
+        setTitle(title)
+    }
+
+    const handleProjectChange = (project) => {
+        setProject(project)
+    }
+
+    const handleSubmit = () => {
+        onFormSubmit({
+            id,
+            title,
+            project
+        })
+    }
 
     const submitText = id ? 'Update' : 'Create';
 
@@ -16,7 +38,8 @@ const TimerForm = (props) => {
                     <TextInput
                         style={styles.textInput}
                         underlineColorAndroid='transparent'
-                        defaultValue={title}
+                        value={title}
+                        onChangeText={handleTitleChange}
                     />
                 </View>
             </View>
@@ -26,13 +49,24 @@ const TimerForm = (props) => {
                     <TextInput
                         style={styles.textInput}
                         underlineColorAndroid='transparent'
-                        defaultValue={project}
+                        value={project}
+                        onChangeText={handleProjectChange}
                     />
                 </View>
             </View>
             <View style={styles.buttonGroup}>
-                <TimerButton small color="#21BA45" title={submitText}/>
-                <TimerButton small color="#DB2828" title="Cancel"/>
+                <TimerButton 
+                    small 
+                    color="#21BA45" 
+                    title={submitText}
+                    onPress={handleSubmit}
+                    />
+                <TimerButton 
+                    small 
+                    color="#DB2828" 
+                    title="Cancel"
+                    onPress={onFormClose}
+                    />
             </View>
         </View>
     )
@@ -72,5 +106,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
 })
+
+TimerForm.propTypes = {
+    id: PropTypes.string,
+    title: PropTypes.string,
+    project: PropTypes.string,
+    onFormSubmit: PropTypes.func.isRequired,
+    onFormClose: PropTypes.func.isRequired,
+}
+
+TimerForm.defaultProps = {
+    id: null,
+    title: '',
+    project: '',
+}
 
 export default TimerForm;
